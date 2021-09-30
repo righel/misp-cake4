@@ -1,0 +1,12 @@
+{
+  "private": true,
+  "dependencies": {
+    "@popperjs/core": "^2.10.1",
+    "bootstrap": "^5.1.1",
+    "font-awesome": "^4.7.0",
+    "jquery": "^3.6.0"
+  },
+  "scripts": {
+    "postinstall": "cp node_modules/font-awesome/fonts/* webroot/fonts"
+  }
+}
