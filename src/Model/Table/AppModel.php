@@ -8,7 +8,10 @@ use Cake\ORM\Table;
 use App\Lib\Tools\RandomTool;
 use Cake\ORM\TableRegistry;
 use Cake\Filesystem\File;
+use Cake\Core\Configure;
+use Exception;
 use UnexpectedValueException;
+use Redis;
 
 /**
  * Application model for Cake.

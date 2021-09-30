@@ -10,6 +10,10 @@ body {
     z-index: 20;
 }
 
+.dropdown-menu{
+    font-size: 12px;
+}
+
 input[type="file"] {
     margin-bottom: 10px;
 }
@@ -2751,7 +2755,14 @@ Query builder
     height: 30px;
 }
 
-
 a.nav-link{
     padding: .2rem 1rem;
+}
+
+.btn-group {
+    margin-left: 5px;
+}
+
+.pagination {
+    margin: 20px 0;
 }

@@ -18,12 +18,11 @@ class OrgImgHelper extends Helper
         }
 
         $orgImgName = $this->findOrgImage($organisation['Organisation']);
-        $baseurl = $this->_View->viewVars['baseurl'];
         if (!$link) {
-            $link = $baseurl . '/organisations/view/' . (empty($organisation['Organisation']['id']) ? h($organisation['Organisation']['name']) : h($organisation['Organisation']['id']));
+            $link = '/organisations/view/' . (empty($organisation['Organisation']['id']) ? h($organisation['Organisation']['name']) : h($organisation['Organisation']['id']));
         }
         if ($orgImgName) {
-            $orgImgUrl = $baseurl . '/img/orgs/' . $orgImgName;
+            $orgImgUrl = '/img/orgs/' . $orgImgName;
             return sprintf('<a href="%s" style="background-image: url(\'%s\')" class="orgImg">%s</a>', $link, $orgImgUrl, h($organisation['Organisation']['name']));
         } else {
             return sprintf('<a href="%s">%s</a>', $link, h($organisation['Organisation']['name']));
@@ -53,12 +52,10 @@ class OrgImgHelper extends Helper
     public function getOrgImg($options, $returnData = false, $raw = false)
     {
         $orgImgName = $this->findOrgImage($options);
-        $baseurl = $this->_View->viewVars['baseurl'];
         if ($orgImgName) {
             $size = !empty($options['size']) ? $options['size'] : 48;
             $result = sprintf(
-                '<img src="%s/img/orgs/%s" title="%s" width="%s" height="%s">',
-                $baseurl,
+                '<img src="/img/orgs/%s" title="%s" width="%s" height="%s">',
                 $orgImgName,
                 isset($options['name']) ? h($options['name']) : h($options['id']),
                 (int)$size,
@@ -67,8 +64,7 @@ class OrgImgHelper extends Helper
 
             if (!$raw && !empty($options['id'])) {
                 $result = sprintf(
-                    '<a href="%s/organisations/view/%s">%s</a>',
-                    $baseurl,
+                    '<a href="/organisations/view/%s">%s</a>',
                     empty($options['id']) ? h($options['name']) : h($options['id']),
                     $result
                 );
@@ -81,8 +77,7 @@ class OrgImgHelper extends Helper
                 );
             } else {
                 $result = sprintf(
-                    '<a href="%s/organisations/view/%s"><span class="welcome">%s</span></a>',
-                    $baseurl,
+                    '<a href="/organisations/view/%s"><span class="welcome">%s</span></a>',
                     empty($options['id']) ? h($options['name']) : h($options['id']),
                     h($options['name'])
                 );

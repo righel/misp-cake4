@@ -87,7 +87,8 @@ class IndexFilterComponent extends Component
                 }
             }
         }
-        $this->Controller->set('passedArgs', json_encode($this->Controller->passedArgs));
+        // TODO: [cakephp 2.x -> 4.x migration] remove? should use $this->request->getParam()/getQuery()
+        // $this->Controller->set('passedArgs', json_encode($this->Controller->passedArgs));
         return $data;
     }
 

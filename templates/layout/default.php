@@ -36,7 +36,7 @@ $cakeDescription = 'MISP';
     }
     ?>
     <?= $this->Html->css('main.css') ?>
-    <?= $this->Html->css('font-awesome.min.css') ?>
+    <?= $this->Html->css('fontawesome.min.css') ?>
     <?= $this->Html->script('jquery.min.js') ?>
     <?= $this->Html->script('popper.min.js') ?>
     <?= $this->Html->script('bootstrap.bundle.min.js') ?>
@@ -54,7 +54,11 @@ $cakeDescription = 'MISP';
         <div class="container-fluid">
             <div class="row">
                 <div class="col-1 d-none d-xl-block sidebar p-0">
-                    <?= $this->element('genericElements/SideMenu/side_menu', $menuData) ?>
+                    <?php
+                    if (!$this->request->is('ajax')) {
+                        echo $this->element('genericElements/SideMenu/side_menu', $menuData);
+                    }
+                    ?>
                 </div>
                 <div role="main" class="col-xl-11 col-lg-12 ml-sm-auto pt-3 px-4">
                     <div class="col-12 d-xl-none px-0"><?= $this->element('genericElements/SideMenu/side_menu', ['minimal' => 1]) ?></div>
