@@ -11,10 +11,13 @@ use Cake\Core\Configure;
  * Users Controller
  *
  * @property \App\Model\Table\UsersTable $Users
+ * @property array $passedArgs
  * @method \App\Model\Entity\User[]|\Cake\Datasource\ResultSetInterface paginate($object = null, array $settings = [])
  */
 class UsersController extends AppController
 {
+    private $passedArgs;
+
     public function beforeFilter(\Cake\Event\EventInterface $event)
     {
         parent::beforeFilter($event);
@@ -39,6 +42,7 @@ class UsersController extends AppController
         // TODO: [cakephp 2.x -> 4.x migration]
         // see: https://book.cakephp.org/3/en/orm/entities.html#creating-virtual-fields
         // $this->User->virtualFields['org_ci'] = 'UPPER(Organisation.name)';
+
         $urlParams = "";
         $passedArgsArray = array();
         $booleanFields = array('autoalert', 'contactalert', 'termsaccepted', 'disabled');
@@ -50,8 +54,8 @@ class UsersController extends AppController
         }
         $this->set('passedArgs', json_encode($this->request->getQueryParams()));
         // check each of the passed arguments whether they're a filter (could also be a sort for example) and if yes, add it to the pagination conditions
-        if (!empty($this->request->getQuery['value'])) {
-            $this->passedArgs['searchall'] = $this->request->getQuery['value'];
+        if ($this->request->getQuery('value') !== null) {
+            $this->passedArgs['searchall'] = $this->request->getQuery('value');
         }
         foreach ($this->request->getQueryParams() as $k => $v) {
             if (substr($k, 0, 6) === 'search') {
@@ -64,7 +68,7 @@ class UsersController extends AppController
                 $searchTerm = substr($k, 6);
                 if (in_array($searchTerm, $booleanFields)) {
                     if ($v != "") {
-                        $this->paginate['conditions'][] = array('User.' . $searchTerm => $v);
+                        $this->paginate['conditions'][] = array('Users.' . $searchTerm => $v);
                     }
                 } elseif (in_array($searchTerm, $textFields)) {
                     if ($v != "") {
@@ -76,28 +80,28 @@ class UsersController extends AppController
                         foreach ($pieces as $piece) {
                             if ($piece[0] == '!') {
                                 if ($searchTerm == 'email') {
-                                    $this->paginate['conditions']['AND'][] = array('LOWER(User.' . $searchTerm . ') NOT LIKE' => '%' . strtolower(substr($piece, 1)) . '%');
+                                    $this->paginate['conditions']['AND'][] = array('LOWER(Users.' . $searchTerm . ') NOT LIKE' => '%' . strtolower(substr($piece, 1)) . '%');
                                 } elseif ($searchTerm == 'org') {
-                                    $this->paginate['conditions']['AND'][] = array('User.org_id !=' => substr($piece, 1));
+                                    $this->paginate['conditions']['AND'][] = array('Users.organisation_id !=' => substr($piece, 1));
                                 } else {
-                                    $this->paginate['conditions']['AND'][] = array('User.' . $searchTerm => substr($piece, 1));
+                                    $this->paginate['conditions']['AND'][] = array('Users.' . $searchTerm => substr($piece, 1));
                                 }
                             } else {
                                 if ($searchTerm == 'email') {
                                     $test['OR'][] = array('LOWER(User.' . $searchTerm . ') LIKE' => '%' . strtolower($piece) . '%');
                                 } elseif ($searchTerm == 'org') {
-                                    $this->paginate['conditions']['OR'][] = array('User.org_id' => $piece);
+                                    $this->paginate['conditions']['OR'][] = array('Users.organisation_id' => $piece);
                                 } elseif ($searchTerm == 'all') {
                                     $this->paginate['conditions']['AND'][] = array(
                                         'OR' => array(
-                                            'UPPER(User.email) LIKE' => '%' . strtoupper($piece) . '%',
-                                            'UPPER(Organisation.name) LIKE' => '%' . strtoupper($piece) . '%',
-                                            'UPPER(Role.name) LIKE' => '%' . strtoupper($piece) . '%',
-                                            'UPPER(User.authkey) LIKE' => '%' . strtoupper($piece) . '%'
+                                            'UPPER(Users.email) LIKE' => '%' . strtoupper($piece) . '%',
+                                            'UPPER(Organisations.name) LIKE' => '%' . strtoupper($piece) . '%',
+                                            'UPPER(Roles.name) LIKE' => '%' . strtoupper($piece) . '%',
+                                            'UPPER(Users.authkey) LIKE' => '%' . strtoupper($piece) . '%'
                                         ),
                                     );
                                 } else {
-                                    $test['OR'][] = array('User.' . $searchTerm => $piece);
+                                    $test['OR'][] = array('Users.' . $searchTerm => $piece);
                                 }
                             }
                         }
@@ -116,14 +120,14 @@ class UsersController extends AppController
                 $conditions = $this->paginate['conditions'];
             }
             if (!$this->_isSiteAdmin()) {
-                $conditions['User.org_id'] = $this->Auth->user('org_id');
+                $conditions['Users.organisation_id'] = $this->Auth->user('organisation_id');
             }
             $users = $this->User->find('all', array(
                 'conditions' => $conditions,
                 'recursive' => -1,
                 'fields' => array(
                     'id',
-                    'org_id',
+                    'organisation_id',
                     'server_id',
                     'email',
                     'autoalert',
@@ -174,7 +178,7 @@ class UsersController extends AppController
                 }
                 $this->set('users', $users);
             } else {
-                $conditions['User.org_id'] = $this->Auth->user('org_id');
+                $conditions['Users.organisation_id'] = $this->Auth->user('organisation_id');
                 $this->paginate['conditions']['AND'][] = $conditions;
                 $users = $this->paginate();
                 foreach ($users as $key => $value) {
@@ -188,88 +192,78 @@ class UsersController extends AppController
     }
 
     /**
-     * View method
+     * Filter User Index
      *
-     * @param string|null $id User id.
      * @return \Cake\Http\Response|null|void Renders view
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
      */
-    public function view($id = null)
+    public function filterUserIndex()
     {
-        $user = $this->Users->get($id, [
-            'contain' => ['Organisations', 'Roles'],
-        ]);
+        $passedArgsArray = array();
+        $booleanFields = array('autoalert', 'contactalert', 'termsaccepted', 'disabled');
+        $textFields = array('role', 'email');
+        if (empty(Configure::read('Security.advanced_authkeys'))) {
+            $textFields[] = 'authkey';
+        }
+        $showOrg = 0;
+        // org admins can't see users of other orgs
+        if ($this->_isSiteAdmin()) {
+            $textFields[] = 'org';
+            $showOrg = 1;
+        }
+        $this->set('differentFilters', $booleanFields);
+        $this->set('simpleFilters', $textFields);
+        $rules = array_merge($booleanFields, $textFields);
+        $this->set('showorg', $showOrg);
 
-        $this->set(compact('user'));
-    }
+        $filtering = array();
+        foreach ($booleanFields as $b) {
+            $filtering[$b] = '';
+        }
+        foreach ($textFields as $t) {
+            $filtering[$t] = array('OR' => array(), 'NOT' => array());
+        }
 
-    /**
-     * Add method
-     *
-     * @return \Cake\Http\Response|null|void Redirects on successful add, renders view otherwise.
-     */
-    public function add()
-    {
-        $user = $this->Users->newEmptyEntity();
-        if ($this->request->is('post')) {
-            $user = $this->Users->patchEntity($user, $this->request->getData());
-            if ($this->Users->save($user)) {
-                $this->Flash->success(__('The user has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
+        foreach ($this->request->getQueryParams() as $k => $v) {
+            if (substr($k, 0, 6) === 'search') {
+                $searchTerm = substr($k, 6);
+                if (in_array($searchTerm, $booleanFields)) {
+                    $filtering[$searchTerm] = $v;
+                } elseif (in_array($searchTerm, $textFields)) {
+                    $pieces = explode('|', $v);
+                    foreach ($pieces as $piece) {
+                        if ($piece[0] == '!') {
+                            $filtering[$searchTerm]['NOT'][] = substr($piece, 1);
+                        } else {
+                            $filtering[$searchTerm]['OR'][] = $piece;
+                        }
+                    }
+                }
+                $passedArgsArray[$searchTerm] = $v;
             }
-            $this->Flash->error(__('The user could not be saved. Please, try again.'));
         }
-        $organisations = $this->Users->Organisations->find('list', ['limit' => 200]);
-        $servers = $this->Users->Servers->find('list', ['limit' => 200]);
-        $roles = $this->Users->Roles->find('list', ['limit' => 200]);
-        $this->set(compact('user', 'organisations', 'servers', 'roles'));
-    }
+        $this->set('filtering', json_encode($filtering));
 
-    /**
-     * Edit method
-     *
-     * @param string|null $id User id.
-     * @return \Cake\Http\Response|null|void Redirects on successful edit, renders view otherwise.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function edit($id = null)
-    {
-        $user = $this->Users->get($id, [
-            'contain' => [],
-        ]);
-        if ($this->request->is(['patch', 'post', 'put'])) {
-            $user = $this->Users->patchEntity($user, $this->request->getData());
-            if ($this->Users->save($user)) {
-                $this->Flash->success(__('The user has been saved.'));
-
-                return $this->redirect(['action' => 'index']);
-            }
-            $this->Flash->error(__('The user could not be saved. Please, try again.'));
+        $roles = $this->User->Roles->find('all', array('recursive' => -1));
+        $roleNames = array();
+        $roleJSON = array();
+        foreach ($roles as $k => $v) {
+            $roleNames[$v['id']] = $v['name'];
+            $roleJSON[] = array('id' => $v['id'], 'value' => $v['name']);
         }
-        $organisations = $this->Users->Organisations->find('list', ['limit' => 200]);
-        $servers = $this->Users->Servers->find('list', ['limit' => 200]);
-        $roles = $this->Users->Roles->find('list', ['limit' => 200]);
-        $this->set(compact('user', 'organisations', 'servers', 'roles'));
-    }
-
-    /**
-     * Delete method
-     *
-     * @param string|null $id User id.
-     * @return \Cake\Http\Response|null|void Redirects to index.
-     * @throws \Cake\Datasource\Exception\RecordNotFoundException When record not found.
-     */
-    public function delete($id = null)
-    {
-        $this->request->allowMethod(['post', 'delete']);
-        $user = $this->Users->get($id);
-        if ($this->Users->delete($user)) {
-            $this->Flash->success(__('The user has been deleted.'));
-        } else {
-            $this->Flash->error(__('The user could not be deleted. Please, try again.'));
+        if ($showOrg) {
+            $orgs = $this->User->Organisations->find('list', array(
+                'conditions' => array('local' => 1),
+                'recursive' => -1,
+                'fields' => array('id', 'name'),
+                'order' => array('LOWER(name) ASC')
+            ));
+            $this->set('orgs', $orgs);
         }
-
-        return $this->redirect(['action' => 'index']);
+        $this->set('roles', $roleNames);
+        $this->set('roleJSON', json_encode($roleJSON));
+        $rules = $this->_arrayToValuesIndexArray($rules);
+        $this->set('rules', $rules);
+        $this->set('baseurl', Configure::read('MISP.baseurl'));
+        $this->layout = 'ajax';
     }
 }

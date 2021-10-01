@@ -53,17 +53,21 @@ class UsersTable extends AppModel
         $this->belongsTo('Organisations', [
             'foreignKey' => 'organisation_id',
             'joinType' => 'INNER',
+            'propertyName' => 'Organisation'
         ]);
         $this->belongsTo('Servers', [
             'foreignKey' => 'server_id',
             'joinType' => 'INNER',
+            'propertyName' => 'Server'
         ]);
         $this->belongsTo('Roles', [
             'foreignKey' => 'role_id',
             'joinType' => 'INNER',
+            'propertyName' => 'Role'
         ]);
         $this->hasMany('UserSettings', [
             'foreignKey' => 'user_id',
+            'propertyName' => 'UserSettings'
         ]);
     }
 

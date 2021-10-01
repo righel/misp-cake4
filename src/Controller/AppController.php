@@ -1627,7 +1627,7 @@ class AppController extends Controller
         if (!empty($identity)) {
             $user = $this->User->getUserById($identity->getOriginalData()['id']);
 
-            $role = $user->role;
+            $role = $user->Role;
             $this->userRole = $role;
 
             $this->set('me', $user);

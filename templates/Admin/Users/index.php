@@ -72,12 +72,12 @@ if (!$this->request->is('ajax')) {
                         'active' => !isset($passedArgsArray['disabled'])
                     ),
                     array(
-                        'url' => '/admin/users/index/searchdisabled:0',
+                        'url' => '/admin/users/index?searchdisabled=0',
                         'text' => __('Active'),
                         'active' => isset($passedArgsArray['disabled']) && $passedArgsArray['disabled'] === "0"
                     ),
                     array(
-                        'url' => '/admin/users/index/searchdisabled:1',
+                        'url' => '/admin/users/index?searchdisabled=1',
                         'text' => __('Disabled'),
                         'active' => isset($passedArgsArray['disabled']) && $passedArgsArray['disabled'] === "1"
                     )
@@ -96,7 +96,7 @@ if (!$this->request->is('ajax')) {
         'class' => 'short',
         'data' => array(
             'id' => array(
-                'value_path' => 'User.id'
+                'value_path' => 'id'
             )
         )
     ));
@@ -121,14 +121,14 @@ echo $this->element('/genericElements/IndexTable/index_table', array(
                     'name' => __('Org'),
                     'sort' => 'organisation_id',
                     'element' => 'org',
-                    'data_path' => 'organisation'
+                    'data_path' => 'Organisation'
                 ),
                 array(
                     'name' => __('Role'),
                     'sort' => 'role_id',
                     'class' => 'short',
                     'element' => 'role',
-                    'data_path' => 'role'
+                    'data_path' => 'Role'
                 ),
                 array(
                     'name' => __('Email'),
@@ -153,16 +153,16 @@ echo $this->element('/genericElements/IndexTable/index_table', array(
                 array(
                     'name' => __('Contact alert'),
                     'element' => 'boolean',
-                    'sort' => 'User.contactalert',
+                    'sort' => 'contactalert',
                     'class' => 'short',
-                    'data_path' => 'User.contactalert'
+                    'data_path' => 'contactalert'
                 ),
                 array(
                     'name' => __('PGP Key'),
                     'element' => 'boolean',
-                    'sort' => 'User.gpgkey',
+                    'sort' => 'gpgkey',
                     'class' => 'short',
-                    'data_path' => 'User.gpgkey'
+                    'data_path' => 'gpgkey'
                 ),
                 array(
                     'name' => __('S/MIME'),
@@ -215,7 +215,7 @@ echo $this->element('/genericElements/IndexTable/index_table', array(
                     'url_params_data_paths' => array(
                         'id'
                     ),
-                    'sort' => 'User.disabled',
+                    'sort' => 'disabled',
                     'class' => 'short',
                     'data_path' => 'monitored',
                     'requirement' => $isSiteAdmin && Configure::read('Security.user_monitoring_enabled')
@@ -245,7 +245,7 @@ echo $this->element('/genericElements/IndexTable/index_table', array(
                     ),
                     'function' => function ($user, $options) {
                         return (
-                            ($options['me']->role->perm_admin &&
+                            ($options['me']->Role->perm_admin &&
                                 ($user->organisation_id == $options['me']->organisation_id)) ||
                             $options['isSiteAdmin']);
                     }

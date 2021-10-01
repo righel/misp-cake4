@@ -897,7 +897,7 @@ class ACLComponent extends Component
         if ($checkLoggedActions) {
             $this->__checkLoggedActions($user, $controller, $action);
         }
-        if ($user && $user->role->perm_site_admin) {
+        if ($user && $user->Role->perm_site_admin) {
             return true;
         }
         $aclList = $this->__aclList;

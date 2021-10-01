@@ -40,19 +40,27 @@ $cakeDescription = 'MISP';
     <?= $this->Html->script('jquery.min.js') ?>
     <?= $this->Html->script('popper.min.js') ?>
     <?= $this->Html->script('bootstrap.bundle.min.js') ?>
-    <?= $this->Html->script('main.js') ?>
+    <?= $this->Html->script('misp.js') ?>
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
 </head>
 
-<body>
+<body data-controller="<?= h($this->request->getAttribute('controller')) ?>" data-action="<?= h($this->request->getAttribute('action')) ?>">
     <header>
         <?= $this->element('global_menu') ?>
     </header>
     <main role="main">
         <div class="container-fluid">
             <div class="row">
+                <div id="popover_form" class="ajax_popover_form"></div>
+                <div id="popover_form_large" class="ajax_popover_form ajax_popover_form_large"></div>
+                <div id="popover_form_x_large" class="ajax_popover_form ajax_popover_form_x_large"></div>
+                <div id="popover_matrix" class="ajax_popover_form ajax_popover_matrix"></div>
+                <div id="popover_box" class="popover_box"></div>
+                <div id="screenshot_box" class="screenshot_box"></div>
+                <div id="confirmation_box" class="confirmation_box"></div>
+                <div id="gray_out" class="gray_out"></div>
                 <div class="col-1 d-none d-xl-block sidebar p-0">
                     <?php
                     if (!$this->request->is('ajax')) {
@@ -73,7 +81,8 @@ $cakeDescription = 'MISP';
     <div id="mainModalContainer"></div>
 </body>
 <script>
-    const darkMode = (<?= empty($darkMode) ? 'false' : 'true' ?>)
+    const darkMode = (<?= empty($darkMode) ? 'false' : 'true' ?>);
+    var baseurl = '<?php echo $baseurl; ?>';
 </script>
 
 </html>

@@ -109,7 +109,7 @@ if (!$skipPagination) {
     echo $this->element('/genericElements/IndexTable/pagination_counter', $paginationData);
     echo $paginatonLinks;
 }
-$url = '/' . $this->request->getParam('controller') . '/' . $this->request->getParam('action');
+$url = $this->request->getAttribute('here');
 ?>
 <script type="text/javascript">
     var passedArgsArray = <?= isset($passedArgs) ? $passedArgs : '{}'; ?>;
