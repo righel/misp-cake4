@@ -59,15 +59,14 @@ $cakeDescription = 'MISP';
         <div id="screenshot_box" class="screenshot_box"></div>
         <div id="confirmation_box" class="confirmation_box"></div>
         <div id="gray_out" class="gray_out"></div>
-        <div class="col-1 d-none d-xl-block sidebar p-0">
+        <div class="col-2 d-none d-xl-block sidebar p-0">
             <?php
             if (!$this->request->is('ajax')) {
                 echo $this->element('genericElements/SideMenu/side_menu', $menuData);
             }
             ?>
         </div>
-        <div id="main" role="main" class="col-xl-11 col-lg-12 ml-sm-auto pt-3 px-4">
-            <div class="col-12 d-xl-none px-0"><?= $this->element('genericElements/SideMenu/side_menu', ['minimal' => 1]) ?></div>
+        <div id="main" role="main" class="col-10 pt-3 px-4">
             <?= $this->Flash->render() ?>
             <?= $this->fetch('content') ?>
         </div>

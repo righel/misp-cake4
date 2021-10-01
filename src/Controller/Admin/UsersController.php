@@ -26,10 +26,6 @@ class UsersController extends AppController
         $this->Authentication->addUnauthenticatedActions(['login']);
 
         $this->set('metaGroup', 'Administration');
-        $this->set('menuData', [
-            'menuList' => $this->_isSiteAdmin() ? 'admin' : 'globalActions',
-            'menuItem' => 'authkeys_index',
-        ]);
     }
 
     /**
@@ -42,6 +38,11 @@ class UsersController extends AppController
         // TODO: [cakephp 2.x -> 4.x migration]
         // see: https://book.cakephp.org/3/en/orm/entities.html#creating-virtual-fields
         // $this->User->virtualFields['org_ci'] = 'UPPER(Organisation.name)';
+
+        $this->set('menuData', [
+            'menuList' => 'admin',
+            'menuItem' => 'indexUser',
+        ]);
 
         $urlParams = "";
         $passedArgsArray = array();
