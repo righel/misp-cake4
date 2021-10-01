@@ -1,8 +1,17 @@
-<p>
-    <?php
-    $this->Paginator->setTemplates([
-        'counterRange' => __('Page {{page}} of {{pages}}, showing {{current}} records out of {{count}} total, starting on record {{start}}, ending on {{end}}'),
-    ]);
-    echo $this->Paginator->counter('range');
-    ?>
-</p>
+<?php
+    echo sprintf(
+        '<p>%s</p>',
+        $this->Paginator->counter(
+            sprintf(
+                __('Page %s of %s, showing %s %s out of %s total, starting on record %s, ending on %s'),
+                '{{page}}',
+                '{{pages}}',
+                '{{current}}',
+                '{{model}}',
+                '{{count}}',
+                '{{start}}',
+                '{{end}}'
+            )
+        )
+    );
+?>

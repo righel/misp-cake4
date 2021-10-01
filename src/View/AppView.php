@@ -46,5 +46,6 @@ class AppView extends View
         $this->loadHelper('FontAwesome');
         $this->loadHelper('UserName');
         $this->loadHelper('DataPathCollector');
+        $this->loadHelper('Hash');
     }
 }

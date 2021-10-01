@@ -1,18 +1,13 @@
 <?php
-
-declare(strict_types=1);
-
-use Cake\Utility\Hash;
-
-/*
-     *  echo $this->element('/genericElements/IndexTable/index_table', array(
+    /*
+     *  echo $this->element('/genericElements/IndexTable/index_table', [
      *      'top_bar' => (
      *          // search/filter bar information compliant with ListTopBar
      *      ),
-     *      'data' => array(
+     *      'data' => [
                 // the actual data to be used
      *      ),
-     *      'fields' => array(
+     *      'fields' => [
      *          // field list with information for the paginator, the elements used for the individual cells, etc
      *      ),
      *      'title' => optional title,
@@ -21,113 +16,138 @@ use Cake\Utility\Hash;
      *  ));
      *
      */
-
-if (!empty($data['title'])) {
-    echo sprintf('<h2>%s</h2>', h($data['title']));
-}
-if (!empty($data['description'])) {
-    echo sprintf(
-        '<div>%s</div>',
-        empty($data['description']) ? '' : h($data['description'])
-    );
-}
-if (!empty($data['html'])) {
-    echo sprintf('<div>%s</div>', $data['html']);
-}
-if (!empty($data['persistUrlParams'])) {
-    foreach ($data['persistUrlParams'] as $persistedParam) {
-        if (!empty($passedArgs[$persistedParam])) {
-            $data['paginatorOptions']['url'][] = $passedArgs[$persistedParam];
+    $tableRandomValue = Cake\Utility\Security::randomString(8);
+    echo '<div id="table-container-' . h($tableRandomValue) . '">';
+    if (!empty($data['title'])) {
+        echo sprintf('<h2 class="fw-light">%s</h2>', h($data['title']));
+    }
+    if (!empty($data['description'])) {
+        echo sprintf(
+            '<div class="fw-light">%s</div>',
+            empty($data['description']) ? '' : h($data['description'])
+        );
+    }
+    echo '<div class="panel">';
+    if (!empty($data['html'])) {
+        echo sprintf('<div>%s</div>', $data['html']);
+    }
+    $skipPagination = isset($data['skip_pagination']) ? $data['skip_pagination'] : 0;
+    if (!$skipPagination) {
+        $paginationData = !empty($data['paginatorOptions']) ? $data['paginatorOptions'] : [];
+        echo $this->element(
+            '/genericElements/IndexTable/pagination',
+            [
+                'paginationOptions' => $paginationData,
+                'tableRandomValue' => $tableRandomValue
+            ]
+        );
+        echo $this->element(
+            '/genericElements/IndexTable/pagination_links'
+        );
+    }
+    $multiSelectData = getMultiSelectData($data['top_bar']);
+    if (!empty($multiSelectData)) {
+        $multiSelectField = [
+            'element' => 'selector',
+            'class' => 'short',
+            'data' => $multiSelectData['data']
+        ];
+        array_unshift($data['fields'], $multiSelectField);
+    }
+    if (!empty($data['top_bar'])) {
+        echo $this->element(
+            '/genericElements/ListTopBar/scaffold',
+            [
+                'data' => $data['top_bar'],
+                'tableRandomValue' => $tableRandomValue
+            ]
+        );
+    }
+    $rows = '';
+    $row_element = isset($data['row_element']) ? $data['row_element'] : 'row';
+    $options = isset($data['options']) ? $data['options'] : [];
+    $actions = isset($data['actions']) ? $data['actions'] : [];
+    if ($this->request->getParam('prefix') === 'Open') {
+        $actions = [];
+    }
+    $dblclickActionArray = !empty($actions) ? $this->Hash->extract($actions, '{n}[dbclickAction]') : [];
+    $dbclickAction = '';
+    foreach ($data['data'] as $k => $data_row) {
+        $primary = null;
+        if (!empty($data['primary_id_path'])) {
+            $primary = $this->Hash->extract($data_row, $data['primary_id_path'])[0];
         }
-    }
-}
-$paginationData = !empty($data['paginatorOptions']) ? $data['paginatorOptions'] : [];
-if ($ajax && isset($containerId)) {
-    $paginationData['data-paginator'] = "#{$containerId}_content";
-}
-$this->Paginator->options($paginationData);
-$skipPagination = (!empty($data['skip_pagination']) || !empty($data['stupid_pagination'])) ? 1 : 0;
-if (!$skipPagination) {
-    $paginatonLinks = $this->element('/genericElements/IndexTable/pagination_links');
-    echo $paginatonLinks;
-}
-
-if (!empty($data['stupid_pagination'])) {
-    $paginatonLinks = $this->element('/genericElements/IndexTable/stupid_pagination_links');
-    echo $paginatonLinks;
-}
-$hasSearch = false;
-if (!empty($data['top_bar'])) {
-    foreach ($data['top_bar']['children'] as $child) {
-        if (isset($child['type']) && $child['type'] === 'search') {
-            $hasSearch = true;
-            break;
+        if (!empty($dblclickActionArray)) {
+            $dbclickAction = sprintf("changeLocationFromIndexDblclick(%s)", $k);
         }
-    }
-    echo $this->element('/genericElements/ListTopBar/scaffold', array('data' => $data['top_bar']));
-}
-$rows = '';
-$row_element = isset($data['row_element']) ? $data['row_element'] : 'row';
-$options = isset($data['options']) ? $data['options'] : array();
-$actions = isset($data['actions']) ? $data['actions'] : array();
-$dblclickActionArray = isset($data['actions']) ? Hash::extract($data['actions'], '{n}[dbclickAction]') : array();
-foreach ($data['data'] as $k => $data_row) {
-    $primary = null;
-    if (!empty($data['primary_id_path'])) {
-        $primary = Hash::extract($data_row, $data['primary_id_path'])[0];
-    }
-    $rows .= sprintf(
-        '<tr data-row-id="%s" %s %s>%s</tr>',
-        h($k),
-        empty($dblclickActionArray) ? '' : 'class="dblclickElement"',
-        empty($primary) ? '' : 'data-primary-id="' . $primary . '"',
-        $this->element(
-            '/genericElements/IndexTable/' . $row_element,
-            array(
-                'k' => $k,
-                'row' => $data_row,
-                'fields' => $data['fields'],
-                'options' => $options,
-                'actions' => $actions,
-                'primary' => $primary
+        $rows .= sprintf(
+            '<tr data-row-id="%s" %s %s class="%s %s">%s</tr>',
+            h($k),
+            empty($dbclickAction) ? '' : 'ondblclick="' . $dbclickAction . '"',
+            empty($primary) ? '' : 'data-primary-id="' . $primary . '"',
+            empty($data['row_modifier']) ? '' : h($data['row_modifier']($data_row)),
+            empty($data['class']) ? '' : h($data['row_class']),
+            $this->element(
+                '/genericElements/IndexTable/' . $row_element,
+                [
+                    'k' => $k,
+                    'row' => $data_row,
+                    'fields' => $data['fields'],
+                    'options' => $options,
+                    'actions' => $actions,
+                    'primary' => $primary,
+                    'tableRandomValue' => $tableRandomValue
+                ]
             )
-        )
+        );
+    }
+    $tbody = '<tbody>' . $rows . '</tbody>';
+    echo sprintf(
+        '<table class="table table-hover" id="index-table-%s" data-table-random-value="%s">%s%s</table>',
+        $tableRandomValue,
+        $tableRandomValue,
+        $this->element(
+            '/genericElements/IndexTable/headers',
+            [
+                'fields' => $data['fields'],
+                'paginator' => $this->Paginator,
+                'actions' => (empty($actions) ? false : true),
+                'tableRandomValue' => $tableRandomValue
+            ]
+        ),
+        $tbody
     );
-}
-$tbody = '<tbody>' . $rows . '</tbody>';
-echo sprintf(
-    '<div style="%s">',
-    isset($data['max_height']) ? sprintf('max-height: %s; overflow-y: auto; resize: both', $data['max_height']) : ''
-);
-echo sprintf(
-    '<table class="table table-striped table-hover table-condensed">%s%s</table>',
-    $this->element('/genericElements/IndexTable/headers', array('fields' => $data['fields'], 'paginator' => $this->Paginator, 'actions' => empty($data['actions']) ? false : true)),
-    $tbody
-);
-echo '</div>';
-if (!$skipPagination) {
-    echo $this->element('/genericElements/IndexTable/pagination_counter', $paginationData);
-    echo $paginatonLinks;
-}
-$url = $this->request->getAttribute('here');
+    if (!$skipPagination) {
+        echo $this->element('/genericElements/IndexTable/pagination_counter', $paginationData);
+        echo $this->element('/genericElements/IndexTable/pagination_links');
+    }
+    echo '</div>';
+    echo '</div>';
 ?>
 <script type="text/javascript">
-    var passedArgsArray = <?= isset($passedArgs) ? $passedArgs : '{}'; ?>;
-    var url = "<?= $url ?>";
-    <?php if ($hasSearch) : ?>
-        $(function() {
-            <?php
-            if (isset($containerId)) {
-                echo 'var target = "#' . $containerId . '_content";';
+    $(document).ready(function() {
+        $('#index-table-<?= $tableRandomValue ?>').data('data', <?= json_encode($data['data']) ?>);
+        $('.privacy-toggle').on('click', function() {
+            var $privacy_target = $(this).parent().find('.privacy-value');
+            if ($(this).hasClass('fa-eye')) {
+                $privacy_target.text($privacy_target.data('hidden-value'));
+                $(this).removeClass('fa-eye');
+                $(this).addClass('fa-eye-slash');
+            } else {
+                $privacy_target.text('****************************************');
+                $(this).removeClass('fa-eye-slash');
+                $(this).addClass('fa-eye');
             }
-            ?>
-            $('#quickFilterButton').click(function() {
-                if (typeof(target) !== 'undefined') {
-                    runIndexQuickFilterFixed(passedArgsArray, url, target);
-                } else {
-                    runIndexQuickFilterFixed(passedArgsArray, url);
-                }
-            });
         });
-    <?php endif; ?>
+    });
 </script>
+
+<?php
+function getMultiSelectData($topbar) {
+    foreach ($topbar['children'] as $child) {
+        if (!empty($child['type']) && $child['type'] == 'multi_select_actions') {
+            return $child;
+        }
+    }
+    return [];
+}
