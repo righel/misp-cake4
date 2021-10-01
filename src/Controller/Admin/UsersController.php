@@ -52,7 +52,7 @@ class UsersController extends AppController
         if ($this->_isSiteAdmin()) {
             $textFields[] = 'org';
         }
-        $this->set('passedArgs', json_encode($this->request->getQueryParams()));
+        $this->set('passedArgs', json_encode($this->request->getQueryParams(), JSON_FORCE_OBJECT));
         // check each of the passed arguments whether they're a filter (could also be a sort for example) and if yes, add it to the pagination conditions
         if ($this->request->getQuery('value') !== null) {
             $this->passedArgs['searchall'] = $this->request->getQuery('value');

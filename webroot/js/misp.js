@@ -2228,7 +2228,10 @@ function runIndexQuickFilterFixed(preserveParams, url, target) {
         delete preserveParams[searchKey]
     }
 
-    url = '?' + (new URLSearchParams(preserveParams)).toString();
+    var params = (new URLSearchParams(preserveParams)).toString();
+    if (params !== null && params !== '') {
+        url = '?' + params;
+    }
 
     if (target !== undefined) {
         xhr({
