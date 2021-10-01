@@ -50,32 +50,28 @@ $cakeDescription = 'MISP';
     <header>
         <?= $this->element('global_menu') ?>
     </header>
-    <main role="main">
-        <div class="container-fluid">
-            <div class="row">
-                <div id="popover_form" class="ajax_popover_form"></div>
-                <div id="popover_form_large" class="ajax_popover_form ajax_popover_form_large"></div>
-                <div id="popover_form_x_large" class="ajax_popover_form ajax_popover_form_x_large"></div>
-                <div id="popover_matrix" class="ajax_popover_form ajax_popover_matrix"></div>
-                <div id="popover_box" class="popover_box"></div>
-                <div id="screenshot_box" class="screenshot_box"></div>
-                <div id="confirmation_box" class="confirmation_box"></div>
-                <div id="gray_out" class="gray_out"></div>
-                <div class="col-1 d-none d-xl-block sidebar p-0">
-                    <?php
-                    if (!$this->request->is('ajax')) {
-                        echo $this->element('genericElements/SideMenu/side_menu', $menuData);
-                    }
-                    ?>
-                </div>
-                <div role="main" class="col-xl-11 col-lg-12 ml-sm-auto pt-3 px-4">
-                    <div class="col-12 d-xl-none px-0"><?= $this->element('genericElements/SideMenu/side_menu', ['minimal' => 1]) ?></div>
-                    <?= $this->Flash->render() ?>
-                    <?= $this->fetch('content') ?>
-                </div>
-            </div>
+    <div class="row">
+        <div id="popover_form" class="ajax_popover_form"></div>
+        <div id="popover_form_large" class="ajax_popover_form ajax_popover_form_large"></div>
+        <div id="popover_form_x_large" class="ajax_popover_form ajax_popover_form_x_large"></div>
+        <div id="popover_matrix" class="ajax_popover_form ajax_popover_matrix"></div>
+        <div id="popover_box" class="popover_box"></div>
+        <div id="screenshot_box" class="screenshot_box"></div>
+        <div id="confirmation_box" class="confirmation_box"></div>
+        <div id="gray_out" class="gray_out"></div>
+        <div class="col-1 d-none d-xl-block sidebar p-0">
+            <?php
+            if (!$this->request->is('ajax')) {
+                echo $this->element('genericElements/SideMenu/side_menu', $menuData);
+            }
+            ?>
         </div>
-    </main>
+        <div id="main" role="main" class="col-xl-11 col-lg-12 ml-sm-auto pt-3 px-4">
+            <div class="col-12 d-xl-none px-0"><?= $this->element('genericElements/SideMenu/side_menu', ['minimal' => 1]) ?></div>
+            <?= $this->Flash->render() ?>
+            <?= $this->fetch('content') ?>
+        </div>
+    </div>
     <div id="mainModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mediumModalLabel" aria-hidden="true"></div>
     <div id="mainToastContainer" style="position: absolute; top: 15px; right: 15px; z-index: 1080"></div>
     <div id="mainModalContainer"></div>
