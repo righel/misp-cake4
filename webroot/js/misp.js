@@ -1,5 +1,6 @@
 /* Codacy comment to notify that baseurl is a read-only global variable. */
 /* global baseurl */
+var UI;
 
 String.prototype.ucfirst = function () {
     return this.charAt(0).toUpperCase() + this.slice(1);
@@ -4616,6 +4617,15 @@ $(document).ready(function () {
         var flashMessageLink = '<span class="useCursorPointer underline bold" onClick="flashErrorPopover();">here</span>';
         $('.alert').html(($('.alert').html().replace("$flashErrorMessage", flashMessageLink)));
     }
+
+    if (typeof UIFactory !== "undefined") {
+        UI = new UIFactory()
+    }
+
+    const debouncedGlobalSearch = debounce(performGlobalSearch, 400)
+    $('#globalSearch')
+        .keydown(debouncedGlobalSearch)
+        .keydown(focusSearchResults);
 });
 
 $(document.body).on("click", ".correlation-expand-button", function () {
@@ -5369,3 +5379,41 @@ $('td.rotate').hover(function () {
     var t = parseInt($(this).index()) + 1;
     $table.find('td:nth-child(' + t + ')').css('background-color', '');
 });
+
+
+function performGlobalSearch(evt) {
+    const $input = $('#globalSearch')
+    const $resultContainer = $('.global-search-result-container')
+    const value = $input.val()
+    const leftKey = 37,
+        upKey = 38,
+        rightKey = 39,
+        downKey = 40,
+        ingoredKeys = [leftKey, upKey, rightKey, downKey]
+    if (ingoredKeys.indexOf(evt.keyCode) != -1) {
+        return;
+    }
+    if (value.length < 3 && evt.keyCode != 13) {
+        bootstrap.Dropdown.getOrCreateInstance('#dropdownMenuSearchAll').hide()
+        return;
+    }
+    const endpoint = '/instance/searchAll'
+    const searchParams = new URLSearchParams({ search: value });
+    const url = endpoint + '?' + searchParams
+    const options = {
+        statusNode: $resultContainer.find('.search-results-wrapper')
+    }
+
+    bootstrap.Dropdown.getOrCreateInstance('#dropdownMenuSearchAll').show()
+    AJAXApi.quickFetchURL(url, options).then((theHTML) => {
+        $resultContainer.html(theHTML)
+    })
+}
+
+function focusSearchResults(evt) {
+    const upKey = 38,
+        downKey = 40
+    if ([upKey, downKey].indexOf(evt.keyCode) != -1) {
+        $('.global-search-result-container').find('.dropdown-item').first().focus()
+    }
+}

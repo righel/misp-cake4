@@ -41,6 +41,9 @@ $cakeDescription = 'MISP';
     <?= $this->Html->script('popper.min.js') ?>
     <?= $this->Html->script('bootstrap.bundle.min.js') ?>
     <?= $this->Html->script('misp.js') ?>
+    <?= $this->Html->script('utils.js') ?>
+    <?= $this->Html->script('bootstrap-helper.js') ?>
+    <?= $this->Html->script('api-helper.js') ?>
     <?= $this->fetch('meta') ?>
     <?= $this->fetch('css') ?>
     <?= $this->fetch('script') ?>
@@ -59,14 +62,12 @@ $cakeDescription = 'MISP';
         <div id="screenshot_box" class="screenshot_box"></div>
         <div id="confirmation_box" class="confirmation_box"></div>
         <div id="gray_out" class="gray_out"></div>
-        <div class="col-2 d-none d-xl-block sidebar p-0">
-            <?php
-            if (!$this->request->is('ajax')) {
-                echo $this->element('genericElements/SideMenu/side_menu', $menuData);
-            }
-            ?>
-        </div>
-        <div id="main" role="main" class="col-10 pt-3 px-4">
+        <?php
+        if (!$this->request->is('ajax')) {
+            echo $this->element('genericElements/SideMenu/side_menu', $menuData);
+        }
+        ?>
+        <div id="main" role="main" class="col pt-3 px-4">
             <?= $this->Flash->render() ?>
             <?= $this->fetch('content') ?>
         </div>

@@ -5,108 +5,111 @@ declare(strict_types=1);
 use Cake\Core\Configure;
 
 $multiSelectField = array();
-if (!$this->request->is('ajax')) {
-    // Allow reset Keys, filtering and searching if viewing the /users/index page
-    echo '<div class="index">';
-    $description = __(
-        'Click {0} to reset the API keys of all sync and org admin users in one shot. This will also automatically inform them of their new API keys.',
-        $this->Form->postLink(
-            __('here'),
-            '/users/resetAllSyncAuthKeys',
-            array(
-                'title' => __('Reset all sync user API keys'),
-                'aria-label' => __('Reset all sync user API keys'),
-                'class' => 'bold'
-            ),
-            __('Are you sure you wish to reset the API keys of all users with sync privileges?')
-        )
-    );
-    $topBar = array(
-        'children' => array(
-            array(
-                'children' => array(
-                    array(
-                        'class' => 'hidden mass-select',
-                        'text' => __('Disable selected users'),
-                        'onClick' => "multiSelectToggleField",
-                        'onClickParams' => array('admin/users', 'massToggleField', 'disabled', '1')
-                    ),
-                    array(
-                        'class' => 'hidden mass-select',
-                        'text' => __('Enable selected users'),
-                        'onClick' => "multiSelectToggleField",
-                        'onClickParams' => array('admin/users', 'massToggleField', 'disabled', '0')
-                    ),
-                    array(
-                        'class' => 'hidden mass-select',
-                        'text' => __('Disable publish emailing'),
-                        'onClick' => "multiSelectToggleField",
-                        'onClickParams' => array('admin/users', 'massToggleField', 'autoalert', '0')
-                    ),
-                    array(
-                        'class' => 'hidden mass-select',
-                        'text' => __('Enable publish emailing'),
-                        'onClick' => "multiSelectToggleField",
-                        'onClickParams' => array('admin/users', 'massToggleField', 'autoalert', '1')
-                    ),
-                )
-            ),
-            array(
-                'type' => 'simple',
-                'children' => array(
-                    array(
-                        'id' => 'search-button',
-                        'title' => __('Modify filters'),
-                        'fa-icon' => 'search',
-                        'onClick' => 'getPopup',
-                        'onClickParams' => array($urlparams, 'admin/users', 'filterUserIndex')
-                    )
-                )
-            ),
-            array(
-                'type' => 'simple',
-                'children' => array(
-                    array(
-                        'url' => '/admin/users/index',
-                        'text' => __('All'),
-                        'active' => !isset($passedArgsArray['disabled'])
-                    ),
-                    array(
-                        'url' => '/admin/users/index?searchdisabled=0',
-                        'text' => __('Active'),
-                        'active' => isset($passedArgsArray['disabled']) && $passedArgsArray['disabled'] === "0"
-                    ),
-                    array(
-                        'url' => '/admin/users/index?searchdisabled=1',
-                        'text' => __('Disabled'),
-                        'active' => isset($passedArgsArray['disabled']) && $passedArgsArray['disabled'] === "1"
-                    )
-                )
-            ),
-            array(
-                'type' => 'search',
-                'button' => __('Filter'),
-                'placeholder' => __('Enter value to search'),
-                'searchKey' => 'value',
+// Allow reset Keys, filtering and searching if viewing the /users/index page
+echo '<div class="index">';
+$description = __(
+    'Click {0} to reset the API keys of all sync and org admin users in one shot. This will also automatically inform them of their new API keys.',
+    $this->Form->postLink(
+        __('here'),
+        '/users/resetAllSyncAuthKeys',
+        array(
+            'title' => __('Reset all sync user API keys'),
+            'aria-label' => __('Reset all sync user API keys'),
+            'class' => 'bold'
+        ),
+        __('Are you sure you wish to reset the API keys of all users with sync privileges?')
+    )
+);
+$topBar = array(
+    'children' => array(
+        array(
+            'children' => array(
+                array(
+                    'class' => 'hidden mass-select',
+                    'text' => __('Disable selected users'),
+                    'onClick' => "multiSelectToggleField",
+                    'onClickParams' => array('admin/users', 'massToggleField', 'disabled', '1')
+                ),
+                array(
+                    'class' => 'hidden mass-select',
+                    'text' => __('Enable selected users'),
+                    'onClick' => "multiSelectToggleField",
+                    'onClickParams' => array('admin/users', 'massToggleField', 'disabled', '0')
+                ),
+                array(
+                    'class' => 'hidden mass-select',
+                    'text' => __('Disable publish emailing'),
+                    'onClick' => "multiSelectToggleField",
+                    'onClickParams' => array('admin/users', 'massToggleField', 'autoalert', '0')
+                ),
+                array(
+                    'class' => 'hidden mass-select',
+                    'text' => __('Enable publish emailing'),
+                    'onClick' => "multiSelectToggleField",
+                    'onClickParams' => array('admin/users', 'massToggleField', 'autoalert', '1')
+                ),
             )
-        )
-    );
-    $multiSelectField = array(array(
-        'element' => 'selector',
-        'class' => 'short',
-        'data' => array(
-            'id' => array(
-                'value_path' => 'id'
+        ),
+        // TODO: migrate cakephp 2.x -> 4.x
+        // array(
+        //     'type' => 'simple',
+        //     'children' => array(
+        //         array(
+        //             'id' => 'search-button',
+        //             'title' => __('Modify filters'),
+        //             'fa-icon' => 'search',
+        //             'onClick' => 'getPopup',
+        //             'onClickParams' => array($urlparams, 'admin/users', 'filterUserIndex')
+        //         )
+        //     )
+        // ),
+        array(
+            'type' => 'simple',
+            'children' => array(
+                array(
+                    'url' => '/admin/users/index',
+                    'text' => __('All'),
+                    'isFilter' => true,
+                    'active' => ($this->request->getQuery('disabled') === null)
+                ),
+                array(
+                    'url' => '/admin/users/index?disabled=0',
+                    'text' => __('Active'),
+                    'isFilter' => true,
+                    'active' => ($this->request->getQuery('disabled') === "0")
+                ),
+                array(
+                    'url' => '/admin/users/index?disabled=1',
+                    'text' => __('Disabled'),
+                    'isFilter' => true,
+                    'active' => ($this->request->getQuery('disabled') === "1")
+                )
             )
+        ),
+        array(
+            'type' => 'search',
+            'button' => __('Filter'),
+            'placeholder' => __('Enter value to search'),
+            'searchKey' => 'value',
+            'quickFilter' => [
+                'value'
+            ]
         )
-    ));
-} else {
-    $description = '';
-    $topBar = [];
-}
+    )
+);
+$multiSelectField = array(array(
+    'element' => 'selector',
+    'class' => 'short',
+    'data' => array(
+        'id' => array(
+            'value_path' => 'id'
+        )
+    )
+));
+
 echo $this->element('/genericElements/IndexTable/index_table', array(
     'data' => array(
-        'data' => $users,
+        'data' => $data,
         'top_bar' => $topBar,
         'fields' => array_merge(
             $multiSelectField,

@@ -53,8 +53,10 @@ class AppController extends Controller
 
     public $baseurl = '';
     public $sql_dump = false;
-
+    public $isRest = null;
     public $restResponsePayload = null;
+    public $user = null;
+    public $breadcrumb = [];
 
     // Used for _isAutomation(), a check that returns true if the controller & action combo matches an action that is a non-xml and non-json automation method
     // This is used to allow authentication via headers for methods not covered by _isRest() - as that only checks for JSON and XML formats
@@ -91,12 +93,22 @@ class AppController extends Controller
             'Authentication' => $this->Authentication
         ]);
         $this->loadComponent('RequestHandler');
+        $this->loadComponent('ParamHandler', [
+            'request' => $this->request
+        ]);
         $this->loadComponent('Flash');
         $this->loadComponent('RestResponse');
-        $this->loadComponent('IndexFilter',            [
+        $this->loadComponent('IndexFilter', [
             'request' => $this->request,
         ]);
-        $this->loadComponent('CRUD');
+        $this->loadModel('MetaFields');
+        $this->loadModel('MetaTemplates');
+        $this->loadComponent('CRUD', [
+            'request' => $this->request,
+            'table' => $this->getTableLocator()->get($this->modelClass),
+            'MetaFields' => $this->MetaFields,
+            'MetaTemplates' => $this->MetaTemplates
+        ]);
         $this->loadComponent('RateLimit');
         $this->loadComponent('Security');
 
@@ -430,7 +442,7 @@ class AppController extends Controller
 
         $this->set('notifications', ['total' => 0, 'unread' => 0]); // TODO: [cakephp 2.x -> 4.x migration]
         $this->set('menuData', []); // TODO: [cakephp 2.x -> 4.x migration]
-        $this->setUserViewVariables();
+        $this->setUserAuthVariables();
     }
 
     /**
@@ -1620,15 +1632,18 @@ class AppController extends Controller
      *
      * @return void
      */
-    private function setUserViewVariables(): void
+    private function setUserAuthVariables(): void
     {
         $identity = $this->Authentication->getIdentity();
 
         if (!empty($identity)) {
             $user = $this->User->getUserById($identity->getOriginalData()['id']);
 
+            $this->ACL->setUser($user);
+
             $role = $user->Role;
             $this->userRole = $role;
+            $this->isAdmin = $role['perm_admin'];
 
             $this->set('me', $user);
             $this->set('isAdmin', $role['perm_admin']);
